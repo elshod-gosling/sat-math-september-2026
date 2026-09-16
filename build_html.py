@@ -674,12 +674,17 @@ html_template = f"""<!DOCTYPE html>
       </div>
       <div class="modal-body">
         <ul style="padding-left: 20px; margin-bottom: 16px; line-height: 1.8;">
-          <li>For student-produced response questions, solve each problem and enter your answer in the box provided.</li>
-          <li>If your answer is a fraction that doesn't fit in the provided space, enter the decimal equivalent.</li>
-          <li>If your answer is a decimal that doesn't fit in the space, enter the rounded or truncated decimal to the maximum number of digits allowed.</li>
-          <li>If a question has multiple correct answers, enter only one answer.</li>
-          <li>You may enter negative numbers (using <code>-</code>) and fractions (using <code>/</code>).</li>
-          <li>Do not enter symbols such as <code>$</code>, <code>%</code>, or commas.</li>
+          <li><strong>Maximum Character Limit:</strong>
+            <ul>
+              <li>For positive numbers, you may enter up to <strong>5 characters</strong> (including digits, decimal point, or fraction slash).</li>
+              <li>For negative numbers, you may enter up to <strong>6 characters</strong> (the negative sign <code>-</code> counts as one of the 6 characters).</li>
+              <li>Any additional characters beyond the limit are automatically blocked.</li>
+            </ul>
+          </li>
+          <li><strong>Decimals:</strong> If your answer is a decimal with more digits than fit, enter the rounded or truncated decimal to the maximum number of digits allowed (e.g. $\frac{2}{3}$ can be entered as <code>2/3</code>, <code>.666</code>, or <code>.667</code>).</li>
+          <li><strong>Fractions & Mixed Numbers:</strong> Mixed numbers must be entered as improper fractions or decimals (e.g., $3\frac{1}{2}$ must be entered as <code>7/2</code> or <code>3.5</code>).</li>
+          <li><strong>Multiple Correct Answers:</strong> If a question has more than one acceptable answer, enter only one answer.</li>
+          <li><strong>Allowed Characters Only:</strong> Only digits <code>0-9</code>, decimal point <code>.</code>, slash <code>/</code>, and negative sign <code>-</code> (first position only) are accepted. Symbols such as <code>$</code>, <code>%</code>, and commas are not permitted.</li>
         </ul>
         <div style="text-align: right; margin-top: 16px;">
           <button class="btn-nav" onclick="closeModal('spr-modal')">Got It</button>

@@ -320,15 +320,21 @@ function renderQuestion() {
     html += '</div>';
   } else {
     const currentVal = userAnswers[q.id] || '';
+    const isNeg = currentVal.startsWith('-');
+    const maxLen = isNeg ? 6 : 5;
     html += '<div class="gridin-container">';
     html += '  <div class="gridin-header">';
     html += '    <span>Student-Produced Response:</span>';
     html += '    <span class="gridin-help-link" onclick="openModal(\'spr-modal\')">How to enter your answer</span>';
     html += '  </div>';
     html += '  <div class="gridin-input-wrapper">';
-    html += '    <input type="text" class="gridin-input" id="gridin-input-' + q.id + '" value="' + currentVal + '" placeholder="Enter answer" oninput="handleGridInChange(\'' + q.id + '\', this.value)">';
+    html += '    <input type="text" class="gridin-input" id="gridin-input-' + q.id + '" value="' + currentVal + '" maxlength="' + maxLen + '" placeholder="Enter answer" autocomplete="off" spellcheck="false" inputmode="decimal" oninput="handleGridInChange(\'' + q.id + '\', this)">';
     html += '    <div class="gridin-preview" id="gridin-preview-' + q.id + '"></div>';
     html += '    <button class="btn-gridin-clear" onclick="clearGridIn(\'' + q.id + '\')">Clear</button>';
+    html += '  </div>';
+    html += '  <div class="gridin-hint">';
+    html += '    <span>Maximum 5 characters (6 characters if negative).</span>';
+    html += '    <span class="gridin-char-counter" id="gridin-counter-' + q.id + '">' + currentVal.length + ' / ' + maxLen + '</span>';
     html += '  </div>';
     html += '</div>';
   }
@@ -362,7 +368,10 @@ function renderQuestion() {
   updateNavDrawer();
   if (q.type === 'grid') {
     const inp = document.getElementById('gridin-input-' + q.id);
-    if (inp) updateGridInPreview(q.id, inp.value);
+    if (inp) {
+      updateGridInPreview(q.id, inp.value);
+      updateGridInCounter(q.id, inp.value, inp.value.startsWith('-') ? 6 : 5);
+    }
   }
 }
 
@@ -398,11 +407,59 @@ function toggleStrikethroughMode() {
   renderQuestion();
 }
 
-function handleGridInChange(qId, val) {
-  userAnswers[qId] = val.trim();
+function sanitizeGridIn(val) {
+  if (!val) return '';
+  val = val.trim();
+  const hasNeg = val.startsWith('-');
+  const rawChars = (hasNeg ? val.slice(1) : val).replace(/-/g, '');
+  let result = hasNeg ? '-' : '';
+  let hasDot = false;
+  let hasSlash = false;
+  for (let i = 0; i < rawChars.length; i++) {
+    const ch = rawChars[i];
+    if (ch >= '0' && ch <= '9') {
+      result += ch;
+    } else if (ch === '.' && !hasDot && !hasSlash) {
+      result += ch;
+      hasDot = true;
+    } else if (ch === '/' && !hasSlash && !hasDot) {
+      result += ch;
+      hasSlash = true;
+    }
+  }
+  // Official Bluebook limit: 6 chars for negative numbers, 5 chars for positive numbers
+  const maxLen = result.startsWith('-') ? 6 : 5;
+  return result.slice(0, maxLen);
+}
+
+function handleGridInChange(qId, inputEl) {
+  const clean = sanitizeGridIn(inputEl.value);
+  const maxLen = clean.startsWith('-') ? 6 : 5;
+  inputEl.maxLength = maxLen;
+  if (inputEl.value !== clean) {
+    inputEl.value = clean;
+  }
+  userAnswers[qId] = clean;
   instantFeedbackRevealed[qId] = false;
-  updateGridInPreview(qId, val);
+  updateGridInPreview(qId, clean);
+  updateGridInCounter(qId, clean, maxLen);
   updateNavDrawer();
+}
+
+function updateGridInCounter(qId, val, maxLen) {
+  const cnt = document.getElementById('gridin-counter-' + qId);
+  if (cnt) {
+    cnt.innerText = val.length + ' / ' + maxLen;
+    if (val.length === maxLen && maxLen > 0) {
+      cnt.style.background = '#fef3f2';
+      cnt.style.color = '#b42318';
+      cnt.style.borderColor = '#fecdca';
+    } else {
+      cnt.style.background = '#f0f9ff';
+      cnt.style.color = '#0284c7';
+      cnt.style.borderColor = '#bae6fd';
+    }
+  }
 }
 
 function clearGridIn(qId) {
@@ -411,7 +468,9 @@ function clearGridIn(qId) {
   const inp = document.getElementById('gridin-input-' + qId);
   if (inp) {
     inp.value = '';
+    inp.maxLength = 5;
     updateGridInPreview(qId, '');
+    updateGridInCounter(qId, '', 5);
   }
   updateNavDrawer();
 }
