@@ -111,106 +111,366 @@ html_template = f"""<!DOCTYPE html>
 </head>
 <body>
 
-  <!-- Top Bluebook Header -->
-  <header class="bb-header">
-    <div class="header-left">
-      <span class="section-title">Section 2: Math</span>
-      <span class="module-badge" id="header-module-badge">Module 1</span>
-      <select id="exam-select" class="exam-selector" onchange="switchExam(this.value)" title="Choose SAT Exam Version">
-        <option value="v1">September 2026 Exam V1</option>
-        <option value="v2">September 2026 Exam V2</option>
-      </select>
-      <button class="btn-header-link" onclick="openModal('directions-modal')" title="View Section Directions">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        Directions
-      </button>
-    </div>
-
-    <div class="header-center">
-      <span class="timer-display" id="timer-display">35:00</span>
-      <button class="btn-timer-toggle" id="btn-timer-toggle" onclick="toggleTimerVisibility()">Hide</button>
-    </div>
-
-    <div class="header-right">
-      <button class="btn-header-tool" id="btn-calculator" onclick="toggleCalculator()" title="Toggle Desmos Calculator">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
-        </svg>
-        Calculator
-      </button>
-      <button class="btn-header-tool" onclick="openModal('reference-modal')" title="Official SAT Math Reference Formulas">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-        </svg>
-        Reference
-      </button>
-      <button class="btn-header-tool" onclick="toggleFullScreen()" title="Toggle Fullscreen Mode">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-        </svg>
-        Fullscreen
-      </button>
-    </div>
-  </header>
-
-  <!-- Main Container -->
-  <div id="app-container">
-    <div id="left-pane">
-      <!-- Question Scroll Area -->
-      <main class="question-scroll-area" id="content-scroll-area">
-        <!-- Rendered dynamically by app.js -->
-      </main>
-
-      <!-- Bottom Nav Bar -->
-      <footer class="bb-footer" id="main-footer">
-        <div class="footer-left">
-          <span style="font-weight: 600; color: #475467; font-size: 0.9rem;">Section 2: Math</span>
+  <!-- ========================================================
+       LANDING PAGE (Welcome & Exam Choice)
+       ======================================================== -->
+  <div id="landing-page">
+    <nav class="landing-nav">
+      <div class="landing-brand">
+        <div class="landing-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#38bdf8">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          Bluebook<span>™</span> Practice
         </div>
-        <div class="footer-center">
-          <button class="btn-navigator-toggle" id="nav-drawer-toggle" onclick="toggleNavDrawer()">
-            <span id="nav-toggle-text">Question 1 of 22</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
-          </button>
-        </div>
-        <div class="footer-right" style="display: flex; gap: 12px;">
-          <button class="btn-nav" id="btn-back" onclick="navigateBack()" style="background: #f2f4f7; color: #344054; border: 1px solid #d0d5dd;">Back</button>
-          <button class="btn-nav" id="btn-next" onclick="navigateNext()">Next</button>
-        </div>
-      </footer>
+        <span class="landing-brand-badge">Digital SAT Math</span>
+      </div>
+      <div class="landing-nav-actions">
+        <button class="landing-btn-secondary" onclick="toggleCalculator()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
+          </svg>
+          Desmos Calculator
+        </button>
+        <button class="landing-btn-secondary" onclick="openModal('reference-modal')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+          Reference Sheet
+        </button>
+        <button class="landing-btn-secondary" onclick="openModal('directions-modal')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+          Directions
+        </button>
+        <button class="landing-btn-secondary" onclick="toggleFullScreen()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+          </svg>
+          Fullscreen
+        </button>
+      </div>
+    </nav>
 
-      <!-- Navigator Drawer Popup -->
-      <div id="nav-drawer">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eaecf0;">
-          <span style="font-weight: 700; color: #1d2939; font-size: 0.95rem;">Question Navigator</span>
-          <button style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:#667085;" onclick="closeNavDrawer()">✕</button>
+    <div class="landing-body">
+      <!-- Hero Header -->
+      <div class="landing-hero">
+        <div class="landing-pill">
+          <span>⚡</span>
+          <span>Official September 2026 Test Releases • SAT Zone Academy</span>
         </div>
-        <div class="nav-grid" id="nav-grid-tiles"></div>
-        <div class="nav-legend">
-          <div class="legend-item"><span class="legend-dot curr"></span> Current</div>
-          <div class="legend-item"><span class="legend-dot ans"></span> Answered</div>
-          <div class="legend-item"><span class="legend-dot"></span> Unanswered</div>
-          <div class="legend-item"><span class="legend-dot mrk"></span> Marked for Review</div>
+        <h1 class="landing-title">
+          Digital SAT® Math <span class="gradient-text">Practice Suite</span>
+        </h1>
+        <p class="landing-subtitle">
+          Experience authentic College Board Bluebook testing conditions with full-featured Desmos graphing calculator, countdown modules, SPR grid-in answers, and official 200–800 scaled scoring.
+        </p>
+      </div>
+
+      <!-- Config & Mode Selector -->
+      <div class="config-bar">
+        <div class="config-group">
+          <span class="config-label">Timer Mode:</span>
+          <div class="segment-control">
+            <button id="btn-mode-timed" class="segment-btn active" onclick="setTestMode('timed')">⏱️ Official Timed (35 min / module)</button>
+            <button id="btn-mode-untimed" class="segment-btn" onclick="setTestMode('untimed')">⏳ Untimed / Self-Paced</button>
+          </div>
+        </div>
+
+        <div class="config-group">
+          <span class="config-label">Practice Mode:</span>
+          <div class="segment-control">
+            <button id="btn-fb-exam" class="segment-btn active" onclick="setFeedbackMode('exam')">🔒 Test Simulation (Score at End)</button>
+            <button id="btn-fb-study" class="segment-btn" onclick="setFeedbackMode('study')">💡 Study Mode (Instant Solutions)</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Docked Calculator Pane -->
-    <aside id="dock-pane">
-      <div class="desmos-titlebar" style="cursor: default;">
-        <div class="desmos-title">
+      <!-- Exam Selection Cards -->
+      <div class="exam-cards-grid">
+        <!-- Exam V1 Card -->
+        <div class="exam-card">
+          <div class="exam-card-badge">Form 1 • September 2026</div>
+          <div>
+            <h2 class="exam-card-title">September 2026 Exam V1</h2>
+            <p class="exam-card-desc">
+              Full-length Math assessment covering Algebra, Advanced Math, Problem-Solving & Data Analysis, and Geometry & Trigonometry.
+            </p>
+          </div>
+
+          <div class="exam-stats-row">
+            <div class="stat-box">
+              <div class="stat-val">44</div>
+              <div class="stat-lbl">Questions</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">70m</div>
+              <div class="stat-lbl">Duration</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">800</div>
+              <div class="stat-lbl">Max Score</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">2</div>
+              <div class="stat-lbl">Modules</div>
+            </div>
+          </div>
+
+          <div class="modules-list">
+            <div class="module-row">
+              <div class="module-row-info">
+                <span class="module-row-title">Module 1</span>
+                <span class="module-row-sub">22 Questions (17 Multiple Choice, 5 Grid-in)</span>
+              </div>
+              <span style="font-size:0.8rem; font-weight:700; color:#38bdf8;">35 Mins</span>
+            </div>
+            <div class="module-row">
+              <div class="module-row-info">
+                <span class="module-row-title">Module 2</span>
+                <span class="module-row-sub">22 Questions (18 Multiple Choice, 4 Grid-in)</span>
+              </div>
+              <span style="font-size:0.8rem; font-weight:700; color:#38bdf8;">35 Mins</span>
+            </div>
+          </div>
+
+          <div class="exam-actions">
+            <button class="btn-start-full" onclick="launchExam('v1', 0)">
+              <span>🚀 Start Full Exam V1 (Modules 1 & 2)</span>
+            </button>
+            <div class="module-buttons-row">
+              <button class="btn-start-mod" onclick="launchExam('v1', 0)">Start Module 1 Only</button>
+              <button class="btn-start-mod" onclick="launchExam('v1', 1)">Start Module 2 Only</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exam V2 Card -->
+        <div class="exam-card">
+          <div class="exam-card-badge">Form 2 • September 2026</div>
+          <div>
+            <h2 class="exam-card-title">September 2026 Exam V2</h2>
+            <p class="exam-card-desc">
+              Comprehensive companion test featuring advanced quadratic models, coordinate geometry, parallel line transversals, and heavy SPR practice.
+            </p>
+          </div>
+
+          <div class="exam-stats-row">
+            <div class="stat-box">
+              <div class="stat-val">44</div>
+              <div class="stat-lbl">Questions</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">70m</div>
+              <div class="stat-lbl">Duration</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">800</div>
+              <div class="stat-lbl">Max Score</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val">2</div>
+              <div class="stat-lbl">Modules</div>
+            </div>
+          </div>
+
+          <div class="modules-list">
+            <div class="module-row">
+              <div class="module-row-info">
+                <span class="module-row-title">Module 1</span>
+                <span class="module-row-sub">22 Questions (17 Multiple Choice, 5 Grid-in)</span>
+              </div>
+              <span style="font-size:0.8rem; font-weight:700; color:#38bdf8;">35 Mins</span>
+            </div>
+            <div class="module-row">
+              <div class="module-row-info">
+                <span class="module-row-title">Module 2</span>
+                <span class="module-row-sub">22 Questions (14 Multiple Choice, 8 Grid-in)</span>
+              </div>
+              <span style="font-size:0.8rem; font-weight:700; color:#38bdf8;">35 Mins</span>
+            </div>
+          </div>
+
+          <div class="exam-actions">
+            <button class="btn-start-full" onclick="launchExam('v2', 0)">
+              <span>🚀 Start Full Exam V2 (Modules 1 & 2)</span>
+            </button>
+            <div class="module-buttons-row">
+              <button class="btn-start-mod" onclick="launchExam('v2', 0)">Start Module 1 Only</button>
+              <button class="btn-start-mod" onclick="launchExam('v2', 1)">Start Module 2 Only</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Highlights & Bluebook Features -->
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Embedded Desmos Calculator</h4>
+            <p>Freely draggable or dockable side-by-side with questions. Supports graphing, regression, and equations.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L1 21h22L12 2zm0 3.45l8.28 14.3H3.72L12 5.45zM11 10h2v4h-2zm0 6h2v2h-2z"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Authentic Scoring Scale</h4>
+            <p>Exact 44-question to 200–800 conversion scale taken directly from Page 37 of the official test releases.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Question Navigator & Tools</h4>
+            <p>Tile drawer for instant question jumping, answer strikethrough, review bookmarking, and SPR fraction input.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Step-by-Step Solutions & Tips</h4>
+            <p>Complete step-by-step explanations for all 88 questions with Desmos graphing calculator shortcut strategies.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div style="text-align: center; color: #64748b; font-size: 0.8rem; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">
+        Digital SAT® is a trademark registered by the College Board, which is not affiliated with, and does not endorse, this practice simulation.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       ACTIVE EXAM VIEW (Bluebook Test Environment)
+       ======================================================== -->
+  <div id="exam-view">
+    <!-- Top Bluebook Header -->
+    <header class="bb-header">
+      <div class="header-left">
+        <button class="btn-header-home" onclick="returnToHome()" title="Return to Main Menu">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          Home
+        </button>
+        <span class="section-title">Section 2: Math</span>
+        <span class="module-badge" id="header-module-badge">Module 1</span>
+        <select id="exam-select" class="exam-selector" onchange="switchExam(this.value)" title="Choose SAT Exam Version">
+          <option value="v1">September 2026 Exam V1</option>
+          <option value="v2">September 2026 Exam V2</option>
+        </select>
+        <button class="btn-header-link" onclick="openModal('directions-modal')" title="View Section Directions">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          Directions
+        </button>
+      </div>
+
+      <div class="header-center">
+        <span class="timer-display" id="timer-display">35:00</span>
+        <button class="btn-timer-toggle" id="btn-timer-toggle" onclick="toggleTimerVisibility()">Hide</button>
+      </div>
+
+      <div class="header-right">
+        <button class="btn-header-tool" id="btn-calculator" onclick="toggleCalculator()" title="Toggle Desmos Calculator">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
           </svg>
-          Desmos Graphing Calculator (Docked)
-        </div>
-        <div class="desmos-controls">
-          <button class="desmos-ctrl-btn" onclick="undockCalculator()" title="Float / Undock Window">🗗 Float</button>
-          <button class="desmos-ctrl-btn" onclick="toggleCalculator()" title="Close Calculator">✕</button>
+          Calculator
+        </button>
+        <button class="btn-header-tool" onclick="openModal('reference-modal')" title="Official SAT Math Reference Formulas">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+          Reference
+        </button>
+        <button class="btn-header-tool" onclick="toggleFullScreen()" title="Toggle Fullscreen Mode">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+          </svg>
+          Fullscreen
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <div id="app-container">
+      <div id="left-pane">
+        <!-- Question Scroll Area -->
+        <main class="question-scroll-area" id="content-scroll-area">
+          <!-- Rendered dynamically by app.js -->
+        </main>
+
+        <!-- Bottom Nav Bar -->
+        <footer class="bb-footer" id="main-footer">
+          <div class="footer-left">
+            <span style="font-weight: 600; color: #475467; font-size: 0.9rem;">Section 2: Math</span>
+          </div>
+          <div class="footer-center">
+            <button class="btn-navigator-toggle" id="nav-drawer-toggle" onclick="toggleNavDrawer()">
+              <span id="nav-toggle-text">Question 1 of 22</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>
+            </button>
+          </div>
+          <div class="footer-right" style="display: flex; gap: 12px;">
+            <button class="btn-nav" id="btn-back" onclick="navigateBack()" style="background: #f2f4f7; color: #344054; border: 1px solid #d0d5dd;">Back</button>
+            <button class="btn-nav" id="btn-next" onclick="navigateNext()">Next</button>
+          </div>
+        </footer>
+
+        <!-- Navigator Drawer Popup -->
+        <div id="nav-drawer">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eaecf0;">
+            <span style="font-weight: 700; color: #1d2939; font-size: 0.95rem;">Question Navigator</span>
+            <button style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:#667085;" onclick="closeNavDrawer()">✕</button>
+          </div>
+          <div class="nav-grid" id="nav-grid-tiles"></div>
+          <div class="nav-legend">
+            <div class="legend-item"><span class="legend-dot curr"></span> Current</div>
+            <div class="legend-item"><span class="legend-dot ans"></span> Answered</div>
+            <div class="legend-item"><span class="legend-dot"></span> Unanswered</div>
+            <div class="legend-item"><span class="legend-dot mrk"></span> Marked for Review</div>
+          </div>
         </div>
       </div>
-      <div id="desmos-docked-target" style="flex:1; width:100%; height:calc(100% - 36px); overflow:hidden;"></div>
-    </aside>
-  </div>
+
+      <!-- Docked Calculator Pane -->
+      <aside id="dock-pane">
+        <div class="desmos-titlebar" style="cursor: default;">
+          <div class="desmos-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
+            </svg>
+            Desmos Graphing Calculator (Docked)
+          </div>
+          <div class="desmos-controls">
+            <button class="desmos-ctrl-btn" onclick="undockCalculator()" title="Float / Undock Window">🗗 Float</button>
+            <button class="desmos-ctrl-btn" onclick="toggleCalculator()" title="Close Calculator">✕</button>
+          </div>
+        </div>
+        <div id="desmos-docked-target" style="flex:1; width:100%; height:calc(100% - 36px); overflow:hidden;"></div>
+      </aside>
+    </div>
+  </div> <!-- /#exam-view -->
 
   <!-- Floating Desmos Window -->
   <div id="desmos-floating-window">
@@ -472,8 +732,12 @@ output_path = os.path.join(BASE_DIR, "SAT_Math_September_2026_Bluebook.html")
 with open(output_path, "w", encoding="utf-8") as f:
     f.write(html_template)
 
+index_path = os.path.join(BASE_DIR, "index.html")
+with open(index_path, "w", encoding="utf-8") as f:
+    f.write(html_template)
+
 file_size = os.path.getsize(output_path)
-print(f"Successfully generated {output_path} ({file_size:,} bytes)")
+print(f"Successfully generated {output_path} and index.html ({file_size:,} bytes)")
 
 # Verification checks
 with open(output_path, "r", encoding="utf-8") as f:
@@ -489,6 +753,9 @@ assert "v1_m1_q1" in content, "Missing v1_m1_q1"
 assert "v1_m2_q22" in content, "Missing v1_m2_q22"
 assert "v2_m1_q1" in content, "Missing v2_m1_q1"
 assert "v2_m2_q22" in content, "Missing v2_m2_q22"
+assert 'id="landing-page"' in content, "Missing landing page"
+assert 'id="exam-view"' in content, "Missing exam view"
+assert 'id="btn-mode-timed"' in content, "Missing mode selector"
 assert 'id="reference-modal"' in content, "Missing reference modal"
 assert 'id="desmos-floating-window"' in content, "Missing desmos floating window"
 assert 'id="dock-pane"' in content, "Missing dock pane"
@@ -496,6 +763,6 @@ assert 'id="nav-drawer"' in content, "Missing nav drawer"
 assert 'id="timer-display"' in content, "Missing timer display"
 assert 'id="exam-select"' in content, "Missing exam select"
 
-print("All 16 verification checks PASSED successfully!")
+print("All 19 verification checks PASSED successfully!")
 
 

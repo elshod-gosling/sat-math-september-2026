@@ -1,4 +1,4 @@
-﻿// Application State
+// Application State
 let currentExamKey = 'v1';
 let currentModuleIndex = 0; // 0 for Module 1, 1 for Module 2
 let currentQuestionIndex = 0; // 0 to 21
@@ -6,11 +6,15 @@ let userAnswers = {}; // key: "v1_m1_q1" -> value
 let markedForReview = {}; // key: "v1_m1_q1" -> boolean
 let struckOptions = {}; // key: "v1_m1_q1_A" -> boolean
 let strikethroughMode = false;
+let testMode = 'timed'; // 'timed' or 'untimed'
+let feedbackMode = 'exam'; // 'exam' or 'study'
+let elapsedSeconds = 0;
 let timerSeconds = 2100; // 35 minutes
 let timerInterval = null;
 let timerHidden = false;
 let desmosCalc = null;
 let isDocked = false;
+let instantFeedbackRevealed = {}; // key: q.id -> boolean
 
 function initKaTeX() {
   if (window.renderMathInElement) {
@@ -29,8 +33,63 @@ function initKaTeX() {
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
   initDesmosCalculator();
-  startExam('v1');
+  showLandingPage();
+  initKaTeX();
 });
+
+function showLandingPage() {
+  const landing = document.getElementById('landing-page');
+  const exam = document.getElementById('exam-view');
+  if (landing) landing.style.display = 'flex';
+  if (exam) exam.style.display = 'none';
+  if (timerInterval) clearInterval(timerInterval);
+  const win = document.getElementById('desmos-floating-window');
+  if (win) win.style.display = 'none';
+  const btn = document.getElementById('btn-calculator');
+  if (btn) btn.classList.remove('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function returnToHome() {
+  const answeredCount = Object.keys(userAnswers).length;
+  if (answeredCount > 0) {
+    if (!confirm('Return to home screen? Your current test will be paused.')) {
+      return;
+    }
+  }
+  showLandingPage();
+}
+
+function setTestMode(mode) {
+  testMode = mode;
+  const btnTimed = document.getElementById('btn-mode-timed');
+  const btnUntimed = document.getElementById('btn-mode-untimed');
+  if (btnTimed) btnTimed.classList.toggle('active', mode === 'timed');
+  if (btnUntimed) btnUntimed.classList.toggle('active', mode === 'untimed');
+}
+
+function setFeedbackMode(mode) {
+  feedbackMode = mode;
+  const btnExam = document.getElementById('btn-fb-exam');
+  const btnStudy = document.getElementById('btn-fb-study');
+  if (btnExam) btnExam.classList.toggle('active', mode === 'exam');
+  if (btnStudy) btnStudy.classList.toggle('active', mode === 'study');
+}
+
+function launchExam(examKey, modIndex = 0) {
+  currentExamKey = examKey;
+  const landing = document.getElementById('landing-page');
+  const exam = document.getElementById('exam-view');
+  if (landing) landing.style.display = 'none';
+  if (exam) exam.style.display = 'flex';
+  document.getElementById('exam-select').value = examKey;
+  userAnswers = {};
+  markedForReview = {};
+  struckOptions = {};
+  instantFeedbackRevealed = {};
+  startModule(modIndex);
+}
+
 
 function initDesmosCalculator() {
   const target = document.getElementById('desmos-calculator-target');
@@ -161,30 +220,47 @@ function startModule(modIndex) {
 
 function startTimer() {
   if (timerInterval) clearInterval(timerInterval);
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
-    if (timerSeconds > 0) {
-      timerSeconds--;
+  if (testMode === 'timed') {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      if (timerSeconds > 0) {
+        timerSeconds--;
+        updateTimerDisplay();
+      } else {
+        clearInterval(timerInterval);
+        alert('Time is up for this module! Directing to module review.');
+        showModuleReview();
+      }
+    }, 1000);
+  } else {
+    elapsedSeconds = 0;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      elapsedSeconds++;
       updateTimerDisplay();
-    } else {
-      clearInterval(timerInterval);
-      alert('Time is up for this module! Directing to module review.');
-      showModuleReview();
-    }
-  }, 1000);
+    }, 1000);
+  }
 }
 
 function updateTimerDisplay() {
   const display = document.getElementById('timer-display');
-  const mins = Math.floor(timerSeconds / 60);
-  const secs = timerSeconds % 60;
-  const formatted = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-  display.innerText = timerHidden ? '--:--' : formatted;
+  if (testMode === 'timed') {
+    const mins = Math.floor(timerSeconds / 60);
+    const secs = timerSeconds % 60;
+    const formatted = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    display.innerText = timerHidden ? '--:--' : formatted;
 
-  if (timerSeconds <= 300) {
-    display.classList.add('timer-warning');
-    if (timerHidden) toggleTimerVisibility();
+    if (timerSeconds <= 300) {
+      display.classList.add('timer-warning');
+      if (timerHidden) toggleTimerVisibility();
+    } else {
+      display.classList.remove('timer-warning');
+    }
   } else {
+    const mins = Math.floor(elapsedSeconds / 60);
+    const secs = elapsedSeconds % 60;
+    const formatted = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    display.innerText = timerHidden ? '--:--' : formatted + ' (Untimed)';
     display.classList.remove('timer-warning');
   }
 }
@@ -257,6 +333,28 @@ function renderQuestion() {
     html += '</div>';
   }
 
+  // Study Mode Instant Feedback
+  if (feedbackMode === 'study') {
+    const hasAns = (userAnswers[q.id] !== undefined && userAnswers[q.id] !== '');
+    if (hasAns) {
+      if (instantFeedbackRevealed[q.id]) {
+        const uAns = (userAnswers[q.id] || '').trim();
+        const cAns = q.answer.trim();
+        const isCorr = (q.type === 'mc') ? (uAns.toUpperCase() === cAns.toUpperCase()) : evaluateGridInMatch(uAns, cAns);
+        
+        html += '<div class="instant-feedback-box ' + (isCorr ? 'correct' : 'incorrect') + '">';
+        html += '  <div style="font-weight:700; margin-bottom:6px;">' + (isCorr ? '✓ Correct!' : '✕ Incorrect') + ' (Correct Answer: ' + cAns + ')</div>';
+        html += '  <div style="font-size:0.92rem; line-height:1.5;"><strong>Solution:</strong> ' + q.explanation + '</div>';
+        if (q.desmos_tip) {
+          html += '  <div class="desmos-tip-box" style="margin-top:8px;"><strong>⚡ Desmos Tip:</strong> ' + q.desmos_tip + '</div>';
+        }
+        html += '</div>';
+      } else {
+        html += '<button class="btn-check-answer" onclick="revealInstantFeedback(\'' + q.id + '\')">✓ Check Answer & Solution</button>';
+      }
+    }
+  }
+
   html += '</div>';
   scrollArea.innerHTML = html;
 
@@ -268,9 +366,15 @@ function renderQuestion() {
   }
 }
 
+function revealInstantFeedback(qId) {
+  instantFeedbackRevealed[qId] = true;
+  renderQuestion();
+}
+
 // User Actions
 function selectOption(qId, optKey) {
   if (struckOptions[qId + '_' + optKey]) return;
+  instantFeedbackRevealed[qId] = false;
   if (userAnswers[qId] === optKey) {
     delete userAnswers[qId];
   } else {
@@ -296,12 +400,14 @@ function toggleStrikethroughMode() {
 
 function handleGridInChange(qId, val) {
   userAnswers[qId] = val.trim();
+  instantFeedbackRevealed[qId] = false;
   updateGridInPreview(qId, val);
   updateNavDrawer();
 }
 
 function clearGridIn(qId) {
   delete userAnswers[qId];
+  instantFeedbackRevealed[qId] = false;
   const inp = document.getElementById('gridin-input-' + qId);
   if (inp) {
     inp.value = '';
@@ -533,8 +639,9 @@ function showScoreReport() {
   html += '      <div class="score-badge">Module 2: ' + m2Correct + ' / 22</div>';
   html += '    </div>';
   html += '  </div>';
-  html += '  <div>';
+  html += '  <div style="display:flex; flex-direction:column; gap:10px;">';
   html += '    <button class="btn-nav" style="background:#ffffff; color:#003366;" onclick="startExam(currentExamKey)">Retake Test</button>';
+  html += '    <button class="btn-nav" style="background:#1e293b; color:#ffffff; border:1px solid #475569;" onclick="showLandingPage()">Choose Another Exam</button>';
   html += '  </div>';
   html += '</div>';
 
