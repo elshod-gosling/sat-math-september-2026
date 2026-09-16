@@ -1,0 +1,15 @@
+﻿rendered_pages/
+v1_page*.png
+v2_page*.png
+crop_*.png
+v2_q14_stem.png
+*.txt
+pdf_structure.json
+v1_m1.json
+v1_m2.json
+v2_m1.json
+v2_m2.json
+make_data.py
+__pycache__/
+.DS_Store
+Thumbs.db
